@@ -1,6 +1,6 @@
 # Notes
 
-_The following are the important formulas and notations I learned from the Ray Tracing Course_
+_The following are the important formulas and notations I learned from the "TU Wien Rendering / Ray Tracing Course"_
 
 ------
 
@@ -61,6 +61,24 @@ Approximated by Christophe Schlick
 
 Snell's Law  
 ![\frac{\sin\theta_1}{\sin\theta_2}=\frac{n_2}{n_1}](https://latex.codecogs.com/png.latex?%5Cfrac%7B%5Csin%5Ctheta_1%7D%7B%5Csin%5Ctheta_2%7D%3D%5Cfrac%7Bn_2%7D%7Bn_1%7D)  
+
+------
+
+Ray Representation  
+![\vec{r}(t)=\vec{o}+t\vec{d}](https://latex.codecogs.com/png.latex?%5Cvec%7Br%7D%28t%29%3D%5Cvec%7Bo%7D&plus;t%5Cvec%7Bd%7D)  
+* ![\vec{o}](https://latex.codecogs.com/png.latex?%5Cvec%7Bo%7D) is origin  
+* ![\vec{d}](https://latex.codecogs.com/png.latex?%5Cvec%7Bd%7D) is direction  
+* ![t](https://latex.codecogs.com/png.latex?t) is distance  
+* ![\|\vec{d}\|=1](https://latex.codecogs.com/png.latex?%5C%7C%5Cvec%7Bd%7D%5C%7C%3D1)  
+
+------
+
+Surface Normal  
+
+For implicit equation ![f(x,y)=0](https://latex.codecogs.com/png.latex?f%28x%2Cy%29%3D0), surface normal is gradient of the function ![\nabla f(x,y)](https://latex.codecogs.com/png.latex?%5Cnabla%20f%28x%2Cy%29)  
+Example: Elliptic Paraboloid  
+![f(x,y,z)=\frac{x^2}{a^2}+\frac{y^2}{b^2}-z](https://latex.codecogs.com/png.latex?f%28x%2Cy%2Cz%29%3D%5Cfrac%7Bx%5E2%7D%7Ba%5E2%7D&plus;%5Cfrac%7By%5E2%7D%7Bb%5E2%7D-z)  
+![\nabla f(x,y,z)=\Big(\frac{\partial f}{\partial x},\frac{\partial f}{\partial y},\frac{\partial f}{\partial z}\Big)](https://latex.codecogs.com/png.latex?%5Cnabla%20f%28x%2Cy%2Cz%29%3D%5CBig%28%5Cfrac%7B%5Cpartial%20f%7D%7B%5Cpartial%20x%7D%2C%5Cfrac%7B%5Cpartial%20f%7D%7B%5Cpartial%20y%7D%2C%5Cfrac%7B%5Cpartial%20f%7D%7B%5Cpartial%20z%7D%5CBig%29)  
 
 ------
 

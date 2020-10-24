@@ -46,3 +46,21 @@ Simplified Rendering Equation:
 
 ------
 
+The Fresnel Equation  
+![R_s(\theta)=\Bigg|\frac{n_1\cos\theta-n_2\sqrt{1-(\frac{n_1}{n_2}\sin\theta)^2}}{n_1\cos\theta+n_2\sqrt{1-(\frac{n_1}{n_2}\sin\theta)^2}}\Bigg|^2](https://latex.codecogs.com/png.latex?R_s%28%5Ctheta%29%3D%5CBigg%7C%5Cfrac%7Bn_1%5Ccos%5Ctheta-n_2%5Csqrt%7B1-%28%5Cfrac%7Bn_1%7D%7Bn_2%7D%5Csin%5Ctheta%29%5E2%7D%7D%7Bn_1%5Ccos%5Ctheta&plus;n_2%5Csqrt%7B1-%28%5Cfrac%7Bn_1%7D%7Bn_2%7D%5Csin%5Ctheta%29%5E2%7D%7D%5CBigg%7C%5E2)
+
+Approximated by Christophe Schlick  
+![R(\theta)=R_0+(1-R_0)(1-\cos\theta)^5](https://latex.codecogs.com/png.latex?R%28%5Ctheta%29%3DR_0&plus;%281-R_0%29%281-%5Ccos%5Ctheta%29%5E5)  
+* ![R(\theta)](https://latex.codecogs.com/png.latex?R%28%5Ctheta%29) is probability of reflection  
+* ![T(\theta)=1-R(\theta)](https://latex.codecogs.com/png.latex?T%28%5Ctheta%29%3D1-R%28%5Ctheta%29) is probability of refraction  
+* ![R_0](https://latex.codecogs.com/png.latex?R_0) is probability of reflection when ![\theta=0](https://latex.codecogs.com/png.latex?%5Ctheta%3D0)  
+    ![R_0=\Big(\frac{n_1-n_2}{n_1+n_2}\Big)^2](https://latex.codecogs.com/png.latex?R_0%3D%5CBig%28%5Cfrac%7Bn_1-n_2%7D%7Bn_1&plus;n_2%7D%5CBig%29%5E2)  
+
+
+![n_\text{medium}=\frac{\text{speed of light in vacuum}}{\text{speed of light in medium}}](https://latex.codecogs.com/png.latex?n_%5Ctext%7Bmedium%7D%3D%5Cfrac%7B%5Ctext%7Bspeed%20of%20light%20in%20vacuum%7D%7D%7B%5Ctext%7Bspeed%20of%20light%20in%20medium%7D%7D)  
+
+Snell's Law  
+![\frac{\sin\theta_1}{\sin\theta_2}=\frac{n_2}{n_1}](https://latex.codecogs.com/png.latex?%5Cfrac%7B%5Csin%5Ctheta_1%7D%7B%5Csin%5Ctheta_2%7D%3D%5Cfrac%7Bn_2%7D%7Bn_1%7D)  
+
+------
+

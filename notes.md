@@ -87,7 +87,7 @@ Shadow
 * Point Light Source (Hard Shadow)  
   binary visibility signal, either visible or not (umbra)  
 * Area Light Source (Soft Shadow)  
-  continous visibility signal (penumbra + umbra)  
+  continous visibility signal (penumbra & umbra)  
 
 Brightness of a point:  
 ![I\Big(I_\text{light}\frac{\text{\#(visible shadow rays)}}{\text{\#(all shadow rays)}}\Big)](https://latex.codecogs.com/png.latex?I%5CBig%28I_%5Ctext%7Blight%7D%5Cfrac%7B%5Ctext%7B%5C%23%28visible%20shadow%20rays%29%7D%7D%7B%5Ctext%7B%5C%23%28all%20shadow%20rays%29%7D%7D%5CBig%29)  
@@ -104,6 +104,31 @@ Camera Models
   ![y=\frac{2y_p-h}{h}\tan(f\text{ovy})](https://latex.codecogs.com/png.latex?y%3D%5Cfrac%7B2y_p-h%7D%7Bh%7D%5Ctan%28f%5Ctext%7Bovy%7D%29)  
   ![z=-1](https://latex.codecogs.com/png.latex?z%3D-1)  
 * Orthographic Camera  
+
+------
+
+Recursion  
+
+Illumination Equation:  
+![I=k_aI_a+I_i(k_d(\vec{L}\cdot\vec{N})+k_s(\vec{V}\cdot\vec{R})^n)+k_tI_t+k_rI_r](https://latex.codecogs.com/png.latex?I%3Dk_aI_a&plus;I_i%28k_d%28%5Cvec%7BL%7D%5Ccdot%5Cvec%7BN%7D%29&plus;k_s%28%5Cvec%7BV%7D%5Ccdot%5Cvec%7BR%7D%29%5En%29&plus;k_tI_t&plus;k_rI_r)  
+* ![k_t](https://latex.codecogs.com/png.latex?k_t) is Fresnel transmission coefficient  
+* ![I_t](https://latex.codecogs.com/png.latex?I_t) is intensity from transmission direction  
+* ![k_r](https://latex.codecogs.com/png.latex?k_r) is Fresnel reflection coefficient  
+* ![I_r](https://latex.codecogs.com/png.latex?I_r) is intensity from reflection direction  
+
+Heckbert's notation:  
+* ![L](https://latex.codecogs.com/png.latex?L) is light source  
+* ![D](https://latex.codecogs.com/png.latex?D) is diffuse light paths  
+* ![S](https://latex.codecogs.com/png.latex?S) is specular light paths  
+* ![E](https://latex.codecogs.com/png.latex?E) is eye/camera  
+* ![[D]*](https://latex.codecogs.com/png.latex?%5BD%5D*) is any amount of diffuse bounces  
+* ![[S|D]](https://latex.codecogs.com/png.latex?%5BS%7CD%5D) is specular or diffuse bounce  
+
+Use the notations  
+Ray casting: ![L[D]E](https://latex.codecogs.com/png.latex?L%5BD%5DE)  
+Radiosity: ![L[D*]E](https://latex.codecogs.com/png.latex?L%5BD*%5DE)  
+Recursive ray tracing: ![L[D]S*E](https://latex.codecogs.com/png.latex?L%5BD%5DS*E)  
+Global illumination: ![L[D|S]*E](https://latex.codecogs.com/png.latex?L%5BD%7CS%5D*E)  
 
 ------
 

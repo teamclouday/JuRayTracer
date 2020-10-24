@@ -78,7 +78,32 @@ Surface Normal
 For implicit equation ![f(x,y)=0](https://latex.codecogs.com/png.latex?f%28x%2Cy%29%3D0), surface normal is gradient of the function ![\nabla f(x,y)](https://latex.codecogs.com/png.latex?%5Cnabla%20f%28x%2Cy%29)  
 Example: Elliptic Paraboloid  
 ![f(x,y,z)=\frac{x^2}{a^2}+\frac{y^2}{b^2}-z](https://latex.codecogs.com/png.latex?f%28x%2Cy%2Cz%29%3D%5Cfrac%7Bx%5E2%7D%7Ba%5E2%7D&plus;%5Cfrac%7By%5E2%7D%7Bb%5E2%7D-z)  
-![\nabla f(x,y,z)=\Big(\frac{\partial f}{\partial x},\frac{\partial f}{\partial y},\frac{\partial f}{\partial z}\Big)](https://latex.codecogs.com/png.latex?%5Cnabla%20f%28x%2Cy%2Cz%29%3D%5CBig%28%5Cfrac%7B%5Cpartial%20f%7D%7B%5Cpartial%20x%7D%2C%5Cfrac%7B%5Cpartial%20f%7D%7B%5Cpartial%20y%7D%2C%5Cfrac%7B%5Cpartial%20f%7D%7B%5Cpartial%20z%7D%5CBig%29)  
+![\nabla f(x,y,z)=\Big(\frac{\partial f}{\partial x},\frac{\partial f}{\partial y},\frac{\partial f}{\partial z}\Big)=\Big(\frac{2x}{a^2},\frac{2y}{b^2},-1\Big)](https://latex.codecogs.com/png.latex?%5Cnabla%20f%28x%2Cy%2Cz%29%3D%5CBig%28%5Cfrac%7B%5Cpartial%20f%7D%7B%5Cpartial%20x%7D%2C%5Cfrac%7B%5Cpartial%20f%7D%7B%5Cpartial%20y%7D%2C%5Cfrac%7B%5Cpartial%20f%7D%7B%5Cpartial%20z%7D%5CBig%29%3D%5CBig%28%5Cfrac%7B2x%7D%7Ba%5E2%7D%2C%5Cfrac%7B2y%7D%7Bb%5E2%7D%2C-1%5CBig%29)  
+
+------
+
+Shadow  
+
+* Point Light Source (Hard Shadow)  
+  binary visibility signal, either visible or not (umbra)  
+* Area Light Source (Soft Shadow)  
+  continous visibility signal (penumbra + umbra)  
+
+Brightness of a point:  
+![I\Big(I_\text{light}\frac{\text{\#(visible shadow rays)}}{\text{\#(all shadow rays)}}\Big)](https://latex.codecogs.com/png.latex?I%5CBig%28I_%5Ctext%7Blight%7D%5Cfrac%7B%5Ctext%7B%5C%23%28visible%20shadow%20rays%29%7D%7D%7B%5Ctext%7B%5C%23%28all%20shadow%20rays%29%7D%7D%5CBig%29)  
+
+------
+
+Camera Models  
+
+* Perspective Camera  
+  Given ![h,w,f\text{ovx}](https://latex.codecogs.com/png.latex?h%2Cw%2Cf%5Ctext%7Bovx%7D) to compute pixel position (x,y)  
+  ![x_p\in(0,w),y_p\in(0,h),f\text{ovx}\in(0,\pi)](https://latex.codecogs.com/png.latex?x_p%5Cin%280%2Cw%29%2Cy_p%5Cin%280%2Ch%29%2Cf%5Ctext%7Bovx%7D%5Cin%280%2C%5Cpi%29)  
+  ![f\text{ovy}=\frac{h}{w}\cdot f\text{ovx}](https://latex.codecogs.com/png.latex?f%5Ctext%7Bovy%7D%3D%5Cfrac%7Bh%7D%7Bw%7D%5Ccdot%20f%5Ctext%7Bovx%7D)  
+  ![x=\frac{2x_p-w}{w}\tan(f\text{ovx})](https://latex.codecogs.com/png.latex?x%3D%5Cfrac%7B2x_p-w%7D%7Bw%7D%5Ctan%28f%5Ctext%7Bovx%7D%29)  
+  ![y=\frac{2y_p-h}{h}\tan(f\text{ovy})](https://latex.codecogs.com/png.latex?y%3D%5Cfrac%7B2y_p-h%7D%7Bh%7D%5Ctan%28f%5Ctext%7Bovy%7D%29)  
+  ![z=-1](https://latex.codecogs.com/png.latex?z%3D-1)  
+* Orthographic Camera  
 
 ------
 

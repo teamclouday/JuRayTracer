@@ -22,14 +22,14 @@ Ray object\\
 `v`: ray intersection v
 """
 mutable struct Ray
-    origin::Array{AbstractFloat}
-    direction::Array{AbstractFloat}
-    t_nearest::AbstractFloat
+    origin::Array{Float64}
+    direction::Array{Float64}
+    t_nearest::Float64
     objectID::Integer
     faceID::Integer
     depth::Integer
-    u::AbstractFloat
-    v::AbstractFloat
+    u::Float64
+    v::Float64
 end
 
 """
@@ -50,6 +50,7 @@ Compute reflection direction of ray
 function ray_reflect(I::Array{T}, N::Array{T})::Array{T} where T<:AbstractFloat
     @assert length(I) == length(N) == 3
     out = I .- (2.0 * sum(I .* N)) .* N
+    return out
 end
 
 """
@@ -85,7 +86,7 @@ function ray_intersect!(ray::Ray, world::JuRenderBase.World)
         object = world.objects[i][1]
         transform = world.objects[i][2]
         for j in 1:length(object.faces)
-            face = object.faces[i]
+            face = object.faces[j]
             # prepare vertices
             v1 = (transform * object.vertices[face[1][1]])[1:3]
             v2 = (transform * object.vertices[face[2][1]])[1:3]
@@ -95,24 +96,23 @@ function ray_intersect!(ray::Ray, world::JuRenderBase.World)
             e2 = v3 .- v1 # edge 2
             pvec = LinearAlgebra.cross(ray.direction, e2)
             det = sum(e1 .* pvec)
-            if det <= 0.0
-                continue
-            end
-            tvec = ray.origin .- v1
-            u = sum(tvec .* pvec)
-            if u < 0.0 || u > det
-                continue
-            end
-            qvec = LinearAlgebra.cross(tvec, e1)
-            v = sum(ray.direction .* qvec)
-            if v < 0.0 || u+v > det
+            # if determinant is negative or very small, ray miss
+            if det <= 1e-8
                 continue
             end
             invDet = 1.0 / det
+            tvec = ray.origin .- v1
+            u = sum(tvec .* pvec) * invDet
+            if (u < 0.0) || (u > 1.0)
+                continue
+            end
+            qvec = LinearAlgebra.cross(tvec, e1)
+            v = sum(ray.direction .* qvec) * invDet
+            if (v < 0.0) || (u+v > 1.0)
+                continue
+            end
             tnear = sum(e2 .* qvec) * invDet
-            if tnear < ray.t_nearest && tnear > 0.00001
-                u *= invDet
-                v *= invDet
+            if tnear < ray.t_nearest && tnear > 1e-8
                 ray.t_nearest = tnear
                 ray.u = u
                 ray.v = v
@@ -148,14 +148,15 @@ function ray_cast(ray::Ray, world::JuRenderBase.World, camera::JuRenderBase.Came
         v3 = (transform * object.vertices[object.faces[ray.faceID][3][1]])[1:3]
         e1 = v2 .- v1
         e2 = v3 .- v2
+        hitColorSpec = [0.0, 0.0, 0.0]
         N = LinearAlgebra.normalize(LinearAlgebra.cross(e1, e2))
         if object.material.d > 0.0
             # compute phong model
             local orgShadow
             if sum(ray.direction .* N) < 0.0
-                orgShadow = hitPos .- N .* 0.00001
+                orgShadow = hitPos .- N .* 1e-8
             else
-                orgShadow = hitPos .+ N .* 0.00001
+                orgShadow = hitPos .+ N .* 1e-8
             end
             lightAcc = [0.0, 0.0, 0.0]
             specAcc = [0.0, 0.0, 0.0]
@@ -167,36 +168,37 @@ function ray_cast(ray::Ray, world::JuRenderBase.World, camera::JuRenderBase.Came
                 LN = max(0.0, sum(lightDir .* N))
                 shadowRay = Ray(orgShadow, lightDir, Inf64, 0, 0, 0, 0.0, 0.0)
                 ray_intersect!(shadowRay, world)
-                if !((shadowRay.objectID > 0 && shadowRay.faceID > 0 && shadowRay.t_nearest < Inf64) && shadowRay.t_nearest^2 < lightDist2)
+                if !((shadowRay.objectID > 0 && shadowRay.faceID > 0 && shadowRay.faceID != ray.faceID && shadowRay.t_nearest < Inf64) && shadowRay.t_nearest^2 < lightDist2)
                     lightAcc .= lightAcc .+ light.color .* LN
                 end
-                dirRefl = ray_reflect(-lightDir, N)
-                specAcc .= specAcc .+ (max(0.0, sum(dirRefl .* ray.direction)))^object.material.Ns .* light.color
+                dirRefl = LinearAlgebra.normalize(ray_reflect(-lightDir, N))
+                specAcc .= specAcc .+ (max(0.0, -sum(dirRefl .* ray.direction)))^object.material.Ns .* light.color
             end
-            hitColor .= lightAcc .* object.material.Kd .+ specAcc .* object.material.Ks
-            hitColor .= hitColor .* object.material.d
+            hitColor .= lightAcc .* object.material.Kd
+            hitColorSpec .= specAcc .* object.material.Ks .* object.material.d
         end
         if object.material.d < 1.0
             dirRefl = LinearAlgebra.normalize(ray_reflect(ray.direction, N))
-            dirRefr = LinearAlgebra.normalize(ray_refract(ray.direction, N, object.material.ni))
+            dirRefr = LinearAlgebra.normalize(ray_refract(ray.direction, N, object.material.Ni))
             local orgRefl, orgRefr
             if sum(dirRefl .* N) < 0.0
-                orgRefl = hitPos .- N .* 0.00001
+                orgRefl = hitPos .- N .* 1e-8
             else
-                orgRefl = hitPos .+ N .* 0.00001
+                orgRefl = hitPos .+ N .* 1e-8
             end
             if sum(dirRefr .* N) < 0.0
-                orgRefr = hitPos .- N .* 0.00001
+                orgRefr = hitPos .- N .* 1e-8
             else
-                orgRefr = hitPos .+ N .* 0.00001
+                orgRefr = hitPos .+ N .* 1e-8
             end
-            kr = fresnel(ray.direction, N, object.material.ni)
+            kr = fresnel(ray.direction, N, object.material.Ni)
             rayRefl = Ray(orgRefl, dirRefl, Inf64, 0, 0, ray.depth+1, 0.0, 0.0)
             rayRefr = Ray(orgRefr, dirRefr, Inf64, 0, 0, ray.depth+1, 0.0, 0.0)
             colRefl = ray_cast(rayRefl, world, camera, max_depth)
             colRefr = ray_cast(rayRefr, world, camera, max_depth)
-            hitColor .= hitColor .+ (1.0 - object.material.d) .* (colRefl .* kr .+ colRefr .* (1.0 - kr))
+            hitColorSpec .= hitColorSpec .+ (1.0 - object.material.d) .* (colRefl .* kr .+ colRefr .* (1.0 - kr))
         end
+        hitColor .= hitColor .+ hitColorSpec
     end
     clamp!(hitColor, 0.0, 1.0)
     return hitColor
@@ -215,21 +217,16 @@ function render(world::JuRenderBase.World, camera::JuRenderBase.Camera; max_dept
     # generate framebuffer
     frame = zeros(3*camera.w*camera.h)
     # prepare perspective data
-    scale = tan(camera.fov/2.0)
-    ratio = float(camera.w) / float(camera.h)
+    posBottomLeft = [0.0, 0.0, 0.0]
+    xVec = [0.0, 0.0, 0.0]
+    yVec = [0.0, 0.0, 0.0]
+    JuRenderBase.ray_params!(camera, posBottomLeft, xVec, yVec)
     origin = copy(camera.pos)
-    push!(origin, 1.0)
-    viewMat = JuRenderBase.mat_view(camera)
-    projMat = JuRenderBase.mat_perspective(camera)
-    origin = (projMat * viewMat * origin)[1:3]
     @sync Threads.@spawn for j in 1:camera.h, i in 1:camera.w
         # create ray
-        x = (2.0 * (i-0.5) / camera.w - 1.0) * ratio * scale
-        y = (1.0 - 2.0 * (j-0.5) / camera.h) * scale
-        z = -1.0
-        rayTarget = (projMat * viewMat * [x,y,z,1.0])[1:3]
+        rayTarget = posBottomLeft .+ (i-0.5) .* xVec .+ (j-0.5) .* yVec
         ray = Ray(origin, LinearAlgebra.normalize(rayTarget .- origin), Inf64, 0, 0, 0, 0.0, 0.0)
-        frame[3*camera.h*(i-1)+3*(j-1)+1:3*camera.h*(i-1)+3*(j-1)+3] .= ray_cast(ray, world, camera, max_depth)
+        frame[3*camera.h*(i-1)+3*(camera.h-j)+1:3*camera.h*(i-1)+3*(camera.h-j)+3] .= ray_cast(ray, world, camera, max_depth)
     end
     return frame
 end

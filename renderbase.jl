@@ -3,7 +3,8 @@
 module JuRenderBase
 export Camera, Object, Light, World
 export loadObjs, saveImage
-export mat_identity, mat_rotate, mat_scale, mat_translate, mat_view, mat_perspective
+export mat_identity, mat_rotate, mat_scale, mat_translate
+export mat_view, mat_perspective, ray_params!
 
 import Images
 import LinearAlgebra
@@ -15,19 +16,15 @@ Camera data\\
 `up`: UP vector\\
 `w`: width of output image\\
 `h`: height of output image\\
-`fov`: field of view (angle in radians)\\
-`zNear`: near distance\\
-`zFar`: far distance
+`fov`: field of view (angle in radians)
 """
 mutable struct Camera
-    pos::Array{AbstractFloat}
-    center::Array{AbstractFloat}
-    up::Array{AbstractFloat}
+    pos::Array{Float64}
+    center::Array{Float64}
+    up::Array{Float64}
     w::Integer
     h::Integer
-    fov::AbstractFloat
-    zNear::AbstractFloat
-    zFar::AbstractFloat
+    fov::Float64
 end
 
 """
@@ -41,13 +38,13 @@ Material data\\
 `d`: transparency
 """
 mutable struct Material
-    Ka::Array{AbstractFloat}
-    Kd::Array{AbstractFloat}
-    Ks::Array{AbstractFloat}
-    Ke::Array{AbstractFloat}
-    Ns::AbstractFloat
-    Ni::AbstractFloat
-    d::AbstractFloat
+    Ka::Array{Float64}
+    Kd::Array{Float64}
+    Ks::Array{Float64}
+    Ke::Array{Float64}
+    Ns::Float64
+    Ni::Float64
+    d::Float64
 end
 
 """
@@ -59,9 +56,9 @@ Object data\\
 `material`: material data for the object
 """
 mutable struct Object
-    vertices::Array{Array{AbstractFloat}}
-    normals::Array{Array{AbstractFloat}}
-    UVs::Array{Array{AbstractFloat}}
+    vertices::Array{Array{Float64}}
+    normals::Array{Array{Float64}}
+    UVs::Array{Array{Float64}}
     faces::Array{Array{Array{Integer}}}
     material::Union{Material,Nothing}
 end
@@ -72,8 +69,8 @@ Point light source data\\
 `color`: color of light source
 """
 mutable struct Light
-    pos::Array{AbstractFloat}
-    color::Array{AbstractFloat}
+    pos::Array{Float64}
+    color::Array{Float64}
 end
 
 """
@@ -83,9 +80,9 @@ World data\\
 `background`: background color
 """
 mutable struct World
-    objects::Array{Tuple{Object,Array{AbstractFloat}}}
+    objects::Array{Tuple{Object,Array{Float64}}}
     lights::Array{Light}
-    background::Array{AbstractFloat}
+    background::Array{Float64}
 end
 
 """
@@ -276,47 +273,58 @@ function mat_rotate(axis::Array{T}, angle::T)::Array{T} where T<:AbstractFloat
     return mat
 end
 
-# reference: glm lookAt
 """
 Generate camera view matrix
 """
 function mat_view(camera::Camera)::Array{AbstractFloat}
-    f = LinearAlgebra.normalize(camera.center .- camera.pos)
+    f = LinearAlgebra.normalize(camera.pos .- camera.center)
     u = LinearAlgebra.normalize(camera.up)
     s = LinearAlgebra.normalize(LinearAlgebra.cross(f, u))
-    u = LinearAlgebra.cross(s, f)
+    u .= LinearAlgebra.cross(s, f)
     mat = mat_identity()
     mat[1, 1] = s[1]
-    mat[2, 1] = s[2]
-    mat[3, 1] = s[3]
-    mat[1, 2] = u[1]
+    mat[1, 2] = s[2]
+    mat[1, 3] = s[3]
+    mat[2, 1] = u[1]
     mat[2, 2] = u[2]
-    mat[3, 2] = u[3]
-    mat[1, 3] = -f[1]
-    mat[2, 3] = -f[2]
-    mat[3, 3] = -f[3]
-    mat[4, 1] = -sum(s .* camera.pos)
-    mat[4, 2] = -sum(u .* camera.pos)
-    mat[4, 3] = sum(f .* camera.pos)
-    return mat'
+    mat[2, 3] = u[3]
+    mat[3, 1] = f[1]
+    mat[3, 2] = f[2]
+    mat[3, 3] = f[3]
+    mat[4, 1] = camera.pos[1]
+    mat[4, 2] = camera.pos[2]
+    mat[4, 3] = camera.pos[3]
+    return mat
 end
 
-# reference: glm perspective
 """
 Generate perspective projection matrix
 """
 function mat_perspective(camera::Camera)::Array{AbstractFloat}
-    range = tan(camera.fov/2.0) * camera.zNear
-    ratio = float(camera.w) / float(camera.h)
-    left = -range * ratio
-    right = range * ratio
-    bottom = -range
-    top = range
-    mat = [(2.0*camera.zNear/(right-left)) 0.0 0.0 0.0;
-           0.0 (2.0*camera.zNear/(top-bottom)) 0.0 0.0;
-           0.0 0.0 -((camera.zFar+camera.zNear)/(camera.zFar-camera.zNear)) -1.0;
-           0.0 0.0 -(2.0*camera.zFar*camera.zNear/(camera.zFar-camera.zNear)) 0.0]
-    return mat'
+    s = 1.0 / tan(camera.fov/2.0)
+    r = float(camera.w) / camera.h
+    mat = [s/r 0.0 0.0                                                       0.0;
+           0.0 s   0.0                                                       0.0;
+           0.0 0.0 -(camera.zFar/(camera.zFar-camera.zNear))                -1.0;
+           0.0 0.0 -(camera.zFar*camera.zNear/(camera.zFar-camera.zNear))    0.0]
+    return mat
+end
+
+"""
+Fill in camera data for ray generation
+"""
+function ray_params!(camera::Camera, posBottomLeft::Array{T}, xVec::Array{T}, yVec::Array{T}) where T<:AbstractFloat
+    @assert length(posBottomLeft) == length(xVec) == length(yVec) == 3
+    f = LinearAlgebra.normalize(camera.center .- camera.pos)
+    u = LinearAlgebra.normalize(camera.up)
+    s = LinearAlgebra.normalize(LinearAlgebra.cross(f, u))
+    u .= LinearAlgebra.cross(s, f)
+    scaleX = tan(camera.fov/2.0)
+    ratio = float(camera.h)/float(camera.w)
+    scaleY = ratio * scaleX
+    posBottomLeft .= camera.center .- u .* scaleY - s .* scaleX
+    xVec .= s .* (2.0 * scaleX / float(camera.w))
+    yVec .= u .* (2.0 * scaleY / float(camera.h))
 end
 
 end

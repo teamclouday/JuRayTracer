@@ -220,13 +220,19 @@ function render(world::JuRenderBase.World, camera::JuRenderBase.Camera; max_dept
     posBottomLeft = [0.0, 0.0, 0.0]
     xVec = [0.0, 0.0, 0.0]
     yVec = [0.0, 0.0, 0.0]
+    samples = [(m,n) for m in [-0.75,-0.25], n in [-0.75,-0.25]]
     JuRenderBase.ray_params!(camera, posBottomLeft, xVec, yVec)
     origin = copy(camera.pos)
     @sync Threads.@spawn for j in 1:camera.h, i in 1:camera.w
-        # create ray
-        rayTarget = posBottomLeft .+ (i-0.5) .* xVec .+ (j-0.5) .* yVec
-        ray = Ray(origin, LinearAlgebra.normalize(rayTarget .- origin), Inf64, 0, 0, 0, 0.0, 0.0)
-        frame[3*camera.h*(i-1)+3*(camera.h-j)+1:3*camera.h*(i-1)+3*(camera.h-j)+3] .= ray_cast(ray, world, camera, max_depth)
+        pixel = zeros(3)
+        for sample in samples
+            # create ray
+            rayTarget = posBottomLeft .+ (i-sample[1]) .* xVec .+ (j-sample[2]) .* yVec
+            ray = Ray(origin, LinearAlgebra.normalize(rayTarget .- origin), Inf64, 0, 0, 0, 0.0, 0.0)
+            pixel .= pixel .+ ray_cast(ray, world, camera, max_depth)
+        end
+        pixel .= pixel ./ length(samples)
+        frame[3*camera.h*(i-1)+3*(camera.h-j)+1:3*camera.h*(i-1)+3*(camera.h-j)+3] .= pixel
     end
     return frame
 end

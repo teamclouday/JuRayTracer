@@ -11,3 +11,8 @@ It's a great series of introductory courses
 -----
 
 See `notes.md` for the necessary formulas and notations for this topic  
+
+-----
+
+Cube and Plane  
+![cube and plane](cube.png)

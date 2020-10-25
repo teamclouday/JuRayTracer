@@ -171,7 +171,7 @@ function ray_cast(ray::Ray, world::JuRenderBase.World, camera::JuRenderBase.Came
                     lightAcc .= lightAcc .+ light.color .* LN
                 end
                 dirRefl = ray_reflect(-lightDir, N)
-                specAcc .= specAcc .+ (max(0.0, -sum(dirRefl .* ray.direction)))^object.material.Ns .* light.color
+                specAcc .= specAcc .+ (max(0.0, sum(dirRefl .* ray.direction)))^object.material.Ns .* light.color
             end
             hitColor .= lightAcc .* object.material.Kd .+ specAcc .* object.material.Ks
             hitColor .= hitColor .* object.material.d
@@ -217,12 +217,18 @@ function render(world::JuRenderBase.World, camera::JuRenderBase.Camera; max_dept
     # prepare perspective data
     scale = tan(camera.fov/2.0)
     ratio = float(camera.w) / float(camera.h)
+    origin = copy(camera.pos)
+    push!(origin, 1.0)
+    viewMat = JuRenderBase.mat_view(camera)
+    projMat = JuRenderBase.mat_perspective(camera)
+    origin = (projMat * viewMat * origin)[1:3]
     @sync Threads.@spawn for j in 1:camera.h, i in 1:camera.w
         # create ray
         x = (2.0 * (i-0.5) / camera.w - 1.0) * ratio * scale
         y = (1.0 - 2.0 * (j-0.5) / camera.h) * scale
         z = -1.0
-        ray = Ray(copy(camera.pos), LinearAlgebra.normalize([x,y,z]), Inf64, 0, 0, 0, 0.0, 0.0)
+        rayTarget = (projMat * viewMat * [x,y,z,1.0])[1:3]
+        ray = Ray(origin, LinearAlgebra.normalize(rayTarget .- origin), Inf64, 0, 0, 0, 0.0, 0.0)
         frame[3*camera.h*(i-1)+3*(j-1)+1:3*camera.h*(i-1)+3*(j-1)+3] .= ray_cast(ray, world, camera, max_depth)
     end
     return frame

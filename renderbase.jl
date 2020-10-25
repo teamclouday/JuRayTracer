@@ -3,23 +3,31 @@
 module JuRenderBase
 export Camera, Object, Light, World
 export loadObjs, saveImage
-export mat_identity, mat_rotate, mat_scale, mat_translate
+export mat_identity, mat_rotate, mat_scale, mat_translate, mat_view, mat_perspective
 
 import Images
+import LinearAlgebra
+
 """
 Camera data\\
 `pos`: camera position in global world\\
-`dir`: camera direction (unit vector)\\
+`center`: camera center\\
+`up`: UP vector\\
 `w`: width of output image\\
 `h`: height of output image\\
-`fov`: field of view (angle in radians)
+`fov`: field of view (angle in radians)\\
+`zNear`: near distance\\
+`zFar`: far distance
 """
 mutable struct Camera
     pos::Array{AbstractFloat}
-    dir::Array{AbstractFloat}
+    center::Array{AbstractFloat}
+    up::Array{AbstractFloat}
     w::Integer
     h::Integer
     fov::AbstractFloat
+    zNear::AbstractFloat
+    zFar::AbstractFloat
 end
 
 """
@@ -266,6 +274,49 @@ function mat_rotate(axis::Array{T}, angle::T)::Array{T} where T<:AbstractFloat
            (2*x*z-2*y*w)   (2*y*z+2*x*w)   (1-2*x^2-2*y^2) 0.0;
            0.0             0.0             0.0             1.0]
     return mat
+end
+
+# reference: glm lookAt
+"""
+Generate camera view matrix
+"""
+function mat_view(camera::Camera)::Array{AbstractFloat}
+    f = LinearAlgebra.normalize(camera.center .- camera.pos)
+    u = LinearAlgebra.normalize(camera.up)
+    s = LinearAlgebra.normalize(LinearAlgebra.cross(f, u))
+    u = LinearAlgebra.cross(s, f)
+    mat = mat_identity()
+    mat[1, 1] = s[1]
+    mat[2, 1] = s[2]
+    mat[3, 1] = s[3]
+    mat[1, 2] = u[1]
+    mat[2, 2] = u[2]
+    mat[3, 2] = u[3]
+    mat[1, 3] = -f[1]
+    mat[2, 3] = -f[2]
+    mat[3, 3] = -f[3]
+    mat[4, 1] = -sum(s .* camera.pos)
+    mat[4, 2] = -sum(u .* camera.pos)
+    mat[4, 3] = sum(f .* camera.pos)
+    return mat'
+end
+
+# reference: glm perspective
+"""
+Generate perspective projection matrix
+"""
+function mat_perspective(camera::Camera)::Array{AbstractFloat}
+    range = tan(camera.fov/2.0) * camera.zNear
+    ratio = float(camera.w) / float(camera.h)
+    left = -range * ratio
+    right = range * ratio
+    bottom = -range
+    top = range
+    mat = [(2.0*camera.zNear/(right-left)) 0.0 0.0 0.0;
+           0.0 (2.0*camera.zNear/(top-bottom)) 0.0 0.0;
+           0.0 0.0 -((camera.zFar+camera.zNear)/(camera.zFar-camera.zNear)) -1.0;
+           0.0 0.0 -(2.0*camera.zFar*camera.zNear/(camera.zFar-camera.zNear)) 0.0]
+    return mat'
 end
 
 end

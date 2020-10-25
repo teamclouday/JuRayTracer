@@ -12,16 +12,14 @@ Camera data\\
 `dir`: camera direction (unit vector)\\
 `w`: width of output image\\
 `h`: height of output image\\
-`fovx`: field of view on x-axis (angle in radians)\\
-`dnear`: near distance for clipping\\
-`dfar`: far distance for clipping
+`fov`: field of view (angle in radians)
 """
 mutable struct Camera
     pos::Array{AbstractFloat}
     dir::Array{AbstractFloat}
     w::Integer
     h::Integer
-    fovx::AbstractFloat
+    fov::AbstractFloat
 end
 
 """

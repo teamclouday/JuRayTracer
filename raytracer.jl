@@ -95,17 +95,17 @@ function ray_intersect!(ray::Ray, world::JuRenderBase.World)
             e2 = v3 .- v1 # edge 2
             pvec = LinearAlgebra.cross(ray.direction, e2)
             det = sum(e1 .* pvec)
-            if det <= 0
+            if det <= 0.0
                 continue
             end
             tvec = ray.origin .- v1
             u = sum(tvec .* pvec)
-            if u < 0 || u > det
+            if u < 0.0 || u > det
                 continue
             end
             qvec = LinearAlgebra.cross(tvec, e1)
             v = sum(ray.direction .* qvec)
-            if v < 0 || u+v > det
+            if v < 0.0 || u+v > det
                 continue
             end
             invDet = 1.0 / det
@@ -146,8 +146,8 @@ function ray_cast(ray::Ray, world::JuRenderBase.World, camera::JuRenderBase.Came
         v1 = (transform * object.vertices[object.faces[ray.faceID][1][1]])[1:3]
         v2 = (transform * object.vertices[object.faces[ray.faceID][2][1]])[1:3]
         v3 = (transform * object.vertices[object.faces[ray.faceID][3][1]])[1:3]
-        e1 = v1 .- v2
-        e2 = v3 .- v1
+        e1 = v2 .- v1
+        e2 = v3 .- v2
         N = LinearAlgebra.normalize(LinearAlgebra.cross(e1, e2))
         if object.material.d > 0.0
             # compute phong model
@@ -166,8 +166,8 @@ function ray_cast(ray::Ray, world::JuRenderBase.World, camera::JuRenderBase.Came
                 LinearAlgebra.normalize!(lightDir)
                 LN = max(0.0, sum(lightDir .* N))
                 shadowRay = Ray(orgShadow, lightDir, Inf64, 0, 0, 0, 0.0, 0.0)
-                ray_intersect!(ray, world)
-                if !(ray.objectID > 0 && ray.faceID > 0 && ray.t_nearest < Inf64 && ray.t_nearest^2 < lightDist2)
+                ray_intersect!(shadowRay, world)
+                if !((shadowRay.objectID > 0 && shadowRay.faceID > 0 && shadowRay.t_nearest < Inf64) && shadowRay.t_nearest^2 < lightDist2)
                     lightAcc .= lightAcc .+ light.color .* LN
                 end
                 dirRefl = ray_reflect(-lightDir, N)
@@ -215,16 +215,15 @@ function render(world::JuRenderBase.World, camera::JuRenderBase.Camera; max_dept
     # generate framebuffer
     frame = zeros(3*camera.w*camera.h)
     # prepare perspective data
-    scalex = tan(camera.fovx/2.0)
-    scaley = tan(camera.h/camera.w*camera.fovx/2.0)
-    # @sync Threads.@spawn 
-    for i in 1:camera.w, j in 1:camera.h
+    scale = tan(camera.fov/2.0)
+    ratio = float(camera.w) / float(camera.h)
+    @sync Threads.@spawn for j in 1:camera.h, i in 1:camera.w
         # create ray
-        x = (2.0 * (i+0.5) / camera.w - 1.0) * scalex
-        y = (2.0 * (j+0.5) / camera.h - 1.0) * scaley
+        x = (2.0 * (i-0.5) / camera.w - 1.0) * ratio * scale
+        y = (1.0 - 2.0 * (j-0.5) / camera.h) * scale
         z = -1.0
         ray = Ray(copy(camera.pos), LinearAlgebra.normalize([x,y,z]), Inf64, 0, 0, 0, 0.0, 0.0)
-        frame[3*camera.w*(j-1)+3*(i-1)+1:3*camera.w*(j-1)+3*(i-1)+3] .= ray_cast(ray, world, camera, max_depth)
+        frame[3*camera.h*(i-1)+3*(j-1)+1:3*camera.h*(i-1)+3*(j-1)+3] .= ray_cast(ray, world, camera, max_depth)
     end
     return frame
 end

@@ -1,6 +1,6 @@
 # JuRayTracer
 
-A ray tracer implemented in pure Julia  
+A simple ray tracer implemented in pure Julia  
 Just for fun  
 
 ------

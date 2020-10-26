@@ -108,7 +108,7 @@ function renderCube6()
     plane = objs[2]
     mat = JuRenderBase.mat_rotate([0.0, 1.0, 0.0], deg2rad(15))
     mat2 = JuRenderBase.mat_translate([-4.0, 0.0, 0.0]) * JuRenderBase.mat_rotate([0.0, 1.0, 0.0], deg2rad(-30)) * JuRenderBase.mat_rotate([0.0, 0.0, -1.0], deg2rad(90))
-    light = JuRenderBase.Light([5.0, 5.0, 0.0], [0.5, 0.5, 0.5])
+    light = JuRenderBase.Light([5.0, 5.0, 0.0], [0.7, 0.7, 0.7])
     world = JuRenderBase.World([(cube,mat),(plane,JuRenderBase.mat_identity()),(plane,mat2)], [light], [0.0, 0.0, 0.0])
     println("World prepared")
 
@@ -119,9 +119,9 @@ function renderCube6()
     JuRenderBase.saveImage("gallary/cube6.png", pixels, camera.w, camera.h)
 end
 
-renderCube1()
-renderCube2()
-renderCube3()
-renderCube4()
-renderCube5()
+#renderCube1()
+#renderCube2()
+#renderCube3()
+#renderCube4()
+#renderCube5()
 renderCube6()

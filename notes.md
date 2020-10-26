@@ -132,3 +132,14 @@ Global illumination: ![L[D|S]*E](https://latex.codecogs.com/png.latex?L%5BD%7CS%
 
 ------
 
+More BRDF  
+* Oren-Nayar BRDF model  
+* Phong-Blinn model  
+* Cook-Torrance model  
+* Ashikhmin-Shirley model  
+
+------
+
+F-Stop Camera (depth of field)  
+Send rays through camera focal point and nearby, and average the collected radiance  
+

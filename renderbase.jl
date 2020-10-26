@@ -91,6 +91,7 @@ load objects data from file
 function loadObjs(filename::String)::Array{Object}
     @assert isfile(filename)
     @assert filename[findlast(isequal('.'),filename):end] == ".obj"
+    directory = joinpath(splitpath(normpath(filename))[1:end-1]...)
     objs::Array{Object} = []
     mats::Dict{String,Material} = Dict()
     lines = readlines(filename)
@@ -106,7 +107,7 @@ function loadObjs(filename::String)::Array{Object}
             continue
         elseif line_arr[1] == "mtllib"
             @assert length(line_arr) > 1
-            mats = loadMaterials(String(line_arr[2]))
+            mats = loadMaterials(joinpath(directory, String(line_arr[2])))
         elseif line_arr[1] == "o"
             if length(objs) > 0
                 lastObj = objs[end]

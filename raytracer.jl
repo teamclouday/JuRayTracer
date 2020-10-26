@@ -5,7 +5,6 @@ module JuRayTracer
 export render
 
 import LinearAlgebra
-import Random
 
 # include("./renderbase.jl")
 import ..JuRenderBase

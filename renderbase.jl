@@ -5,9 +5,12 @@ export Camera, Object, Light, World
 export loadObjs, saveImage, loadImage
 export mat_identity, mat_rotate, mat_scale, mat_translate
 export mat_view, mat_perspective, ray_params!
+export monte_carlo_integration
 
 import Images
+import Random
 import LinearAlgebra
+import Distributions
 
 """
 Camera data\\
@@ -341,6 +344,21 @@ function ray_params!(camera::Camera, posBottomLeft::Array{T}, xVec::Array{T}, yV
     posBottomLeft .= camera.center .- u .* scaleY - s .* scaleX
     xVec .= s .* (2.0 * scaleX / float(camera.w))
     yVec .= u .* (2.0 * scaleY / float(camera.h))
+end
+
+"""
+Monte Carlo Integration
+"""
+function monte_carlo_integration(func::Function, prob::Function, samples::Integer, lower::T, upper::T)::T where T <: AbstractFloat
+    @assert lower < upper
+    @assert samples > 0
+    result = 0.0
+    for i in 1:samples
+        x = Random.rand(Distributions.Uniform(lower, upper))
+        result += func(x) / prob(x)
+    end
+    result = result / samples
+    return result
 end
 
 end

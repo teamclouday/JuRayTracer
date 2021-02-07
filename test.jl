@@ -129,6 +129,32 @@ function tonemap1()
     JuRenderBase.saveImage("gallary/mapped1_2.png", mapped, width, height)
 end
 
+function montecarlo1()
+    println("f(x) = sin(x)")
+    f(x) = sin(x)
+    samples = 10000000
+    lower = 0.0
+    upper = Float64(pi)
+    p(x) = 1 / (upper - lower) # assume uniform distribution
+    println("Samples: $samples\nLower: $lower\nUpper: $upper")
+    result = JuRenderBase.monte_carlo_integration(f, p, samples, lower, upper)
+    println("Integration is: $result")
+end
+
+function montecarlo2()
+    println("f(x) = sin(x)*sin(x)")
+    f(x) = sin(x)*sin(x)
+    samples = 10000000
+    lower = 0.0
+    upper = Float64(pi)
+    p(x) = 1 / (upper - lower) # assume uniform distribution
+    println("Samples: $samples\nLower: $lower\nUpper: $upper")
+    result = JuRenderBase.monte_carlo_integration(f, p, samples, lower, upper)
+    println("Integration is: $result")
+end
+
+
+
 #renderCube1()
 #renderCube2()
 #renderCube3()
@@ -136,4 +162,7 @@ end
 #renderCube5()
 #renderCube6()
 
-tonemap1()
+#tonemap1()
+
+montecarlo1()
+montecarlo2()

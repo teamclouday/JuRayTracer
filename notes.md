@@ -212,3 +212,22 @@ Local version steps:
 3. Compress luminances by spatially varying function  
    ![L_{output}(x,y)=\frac{L_{scaled}(x,y)}{1+V(x,y,s(x,y))}](https://latex.codecogs.com/png.latex?L_%7Boutput%7D%28x%2Cy%29%3D%5Cfrac%7BL_%7Bscaled%7D%28x%2Cy%29%7D%7B1&plus;V%28x%2Cy%2Cs%28x%2Cy%29%29%7D)  
 
+------
+
+Monte Carlo Integration  
+![\int^a_b\frac{f(x)}{p(x)}p(x)\mathrm{d}x\approx\frac{1}{N}\sum^N_{i=1}\frac{f(X_i)}{p(X_i)}](https://latex.codecogs.com/png.latex?%5Cint%5Ea_b%5Cfrac%7Bf%28x%29%7D%7Bp%28x%29%7Dp%28x%29%5Cmathrm%7Bd%7Dx%5Capprox%5Cfrac%7B1%7D%7BN%7D%5Csum%5EN_%7Bi%3D1%7D%5Cfrac%7Bf%28X_i%29%7D%7Bp%28X_i%29%7D)  
+where ![p(x)](https://latex.codecogs.com/png.latex?p%28x%29) is probability of sample X (here it is uniform distribution)  
+
+Importance Sampling  
+![E\Big[\frac{f(x)}{p(x)}\Big]=\int^a_b\frac{f(x)}{p(x)}p(x)\mathrm{d}x\approx\frac{1}{N}\sum^N_{i=1}\frac{f(X_i)}{p(X_i)}](https://latex.codecogs.com/png.latex?E%5CBig%5B%5Cfrac%7Bf%28x%29%7D%7Bp%28x%29%7D%5CBig%5D%3D%5Cint%5Ea_b%5Cfrac%7Bf%28x%29%7D%7Bp%28x%29%7Dp%28x%29%5Cmathrm%7Bd%7Dx%5Capprox%5Cfrac%7B1%7D%7BN%7D%5Csum%5EN_%7Bi%3D1%7D%5Cfrac%7Bf%28X_i%29%7D%7Bp%28X_i%29%7D)  
+
+Optimal importance sampling (least variance) is archieved when every element of function is sampled with probability that is proportional to its value  
+
+Applied to global illumination rendering equation:  
+![\int_\Omega L_i(x,\vec{w}')f_r(\vec{w},x,\vec{w}')\cos\theta\mathrm{d}\vec{w}'\approx\frac{1}{N}\sum^N_{i=1}\frac{L_i(x,\vec{w_i}')f_r(\vec{w},x,\vec{w_i}')\cos\theta}{p(\vec{w_i}')}](https://latex.codecogs.com/png.latex?%5Cint_%5COmega%20L_i%28x%2C%5Cvec%7Bw%7D%27%29f_r%28%5Cvec%7Bw%7D%2Cx%2C%5Cvec%7Bw%7D%27%29%5Ccos%5Ctheta%5Cmathrm%7Bd%7D%5Cvec%7Bw%7D%27%5Capprox%5Cfrac%7B1%7D%7BN%7D%5Csum%5EN_%7Bi%3D1%7D%5Cfrac%7BL_i%28x%2C%5Cvec%7Bw_i%7D%27%29f_r%28%5Cvec%7Bw%7D%2Cx%2C%5Cvec%7Bw_i%7D%27%29%5Ccos%5Ctheta%7D%7Bp%28%5Cvec%7Bw_i%7D%27%29%7D)  
+
+In Diffuse case:  
+![f_r(\vec{w},x,\vec{w_i}')=\frac{\rho}{\pi}](https://latex.codecogs.com/png.latex?f_r%28%5Cvec%7Bw%7D%2Cx%2C%5Cvec%7Bw_i%7D%27%29%3D%5Cfrac%7B%5Crho%7D%7B%5Cpi%7D)  
+![p(\vec{w_i}')=\frac{\cos\theta}{\pi}](https://latex.codecogs.com/png.latex?p%28%5Cvec%7Bw_i%7D%27%29%3D%5Cfrac%7B%5Ccos%5Ctheta%7D%7B%5Cpi%7D)  
+![\frac{1}{N}\sum^N_{i=1}\frac{L_i(x,\vec{w_i}')\rho/\pi\cos\theta}{\cos\theta/\pi}=\frac{1}{N}\sum^N_{i=1}L_i(x,\vec{w_i}')\rho](https://latex.codecogs.com/png.latex?%5Cfrac%7B1%7D%7BN%7D%5Csum%5EN_%7Bi%3D1%7D%5Cfrac%7BL_i%28x%2C%5Cvec%7Bw_i%7D%27%29%5Crho/%5Cpi%5Ccos%5Ctheta%7D%7B%5Ccos%5Ctheta/%5Cpi%7D%3D%5Cfrac%7B1%7D%7BN%7D%5Csum%5EN_%7Bi%3D1%7DL_i%28x%2C%5Cvec%7Bw_i%7D%27%29%5Crho)  
+

@@ -143,3 +143,72 @@ More BRDF
 F-Stop Camera (depth of field)  
 Send rays through camera focal point and nearby, and average the collected radiance  
 
+------
+
+Recursive Ray Tracing:  
+Only approximate local diffuse color, not aware of surrounding  
+![I=k_aI_a+I_i(k_d(\vec{L}\cdot\vec{N})+k_s(\vec{V}\cdot\vec{R})^n)+k_tI_t+k_rI_r](https://latex.codecogs.com/png.latex?I%3Dk_aI_a&plus;I_i%28k_d%28%5Cvec%7BL%7D%5Ccdot%5Cvec%7BN%7D%29&plus;k_s%28%5Cvec%7BV%7D%5Ccdot%5Cvec%7BR%7D%29%5En%29&plus;k_tI_t&plus;k_rI_r)  
+
+Global Illumination:  
+Take surrounding into consideration when computing diffuse and specular color  
+![L_o(x,\vec{w})=L_e(x,\vec{w})+\int_\Omega L_i(x,\vec{w}')f_r(\vec{w},x,\vec{w}')\cos\theta\, \mathrm{d}\vec{w}'](https://latex.codecogs.com/png.latex?L_o%28x%2C%5Cvec%7Bw%7D%29%3DL_e%28x%2C%5Cvec%7Bw%7D%29&plus;%5Cint_%5COmega%20L_i%28x%2C%5Cvec%7Bw%7D%27%29f_r%28%5Cvec%7Bw%7D%2Cx%2C%5Cvec%7Bw%7D%27%29%5Ccos%5Ctheta%5C%2C%20%5Cmathrm%7Bd%7D%5Cvec%7Bw%7D%27)  
+
+Global illumination is much more realistic than recursive ray tracing, but more complicated to compute  
+
+Monte Carlo Integration  
+* It's __impossible__ to compute integral of very complex function in closed form, but possible to sample the function  
+* Idea is to determine the intergral from the fewest samples  
+
+In order to compute:  
+![\int_a^b f(x)\mathrm{d}x](https://latex.codecogs.com/png.latex?%5Cint_a%5Eb%20f%28x%29%5Cmathrm%7Bd%7Dx)  
+* Sample either miss or hit  
+* Close the function in a box of size A
+
+Then:  
+![\int_a^b f(x)\mathrm{d}x/A \approx \frac{\text{hits}}{\text{hits}+\text{miss}}](https://latex.codecogs.com/png.latex?%5Cint_a%5Eb%20f%28x%29%5Cmathrm%7Bd%7Dx/A%20%5Capprox%20%5Cfrac%7B%5Ctext%7Bhits%7D%7D%7B%5Ctext%7Bhits%7D&plus;%5Ctext%7Bmiss%7D%7D)  
+
+------
+
+Space Partitioning
+
+* k-d tree  
+  [+] Faster traversal on CPU  
+  [-] Larger amount of nodes and duplicate references
+* Bounding Volume Hierarchy (BVH)  
+  [+] Faster traversal on GPU  
+  [+] Easier to update for dynamic scenes  
+  [+] Every object only in one tree leaf  
+  [-] Spatial overlap of nodes  
+
+------
+
+Bounding Volume Hierarchies
+
+Surface area heuristic (SAH):  
+![\text{SAH}=C_\text{inner}\sum_I\frac{A_n}{A_\text{root}}+C_\text{leaf}\sum_LT_n\frac{A_n}{A_\text{root}}](https://latex.codecogs.com/png.latex?%5Ctext%7BSAH%7D%3DC_%5Ctext%7Binner%7D%5Csum_I%5Cfrac%7BA_n%7D%7BA_%5Ctext%7Broot%7D%7D&plus;C_%5Ctext%7Bleaf%7D%5Csum_LT_n%5Cfrac%7BA_n%7D%7BA_%5Ctext%7Broot%7D%7D)  
+where:  
+* ![I](https://latex.codecogs.com/png.latex?I) are inner nodes  
+* ![L](https://latex.codecogs.com/png.latex?L) are leaf nodes  
+* ![A_n](https://latex.codecogs.com/png.latex?A_n) is surface area node n  
+* ![A_{root}](https://latex.codecogs.com/png.latex?A_{root}) is surface area of its root  
+
+Constructing the tree with minimal SAH cost is expensive, so approximations are often used  
+
+------
+
+Reinhard Tone Mapper  
+
+Global version steps:  
+1. Compute log average (luminance space)  
+   ![L_{avg}=\exp\Big(\frac{1}{N}\sum_{x,y}\log(L_{input}(x,y))\Big)=\sqrt[N]{\prod_{x,y}L_{input}(x,y)}](https://latex.codecogs.com/png.latex?L_%7Bavg%7D%3D%5Cexp%5CBig%28%5Cfrac%7B1%7D%7BN%7D%5Csum_%7Bx%2Cy%7D%5Clog%28L_%7Binput%7D%28x%2Cy%29%29%5CBig%29%3D%5Csqrt%5BN%5D%7B%5Cprod_%7Bx%2Cy%7DL_%7Binput%7D%28x%2Cy%29%7D)  
+2. Map average value to middle-gray given by ![\alpha](https://latex.codecogs.com/png.latex?\alpha)  
+   ![L_{scaled}(x,y)=\frac{\alpha}{L_{avg}}L_{input}(x,y)](https://latex.codecogs.com/png.latex?L_%7Bscaled%7D%28x%2Cy%29%3D%5Cfrac%7B%5Calpha%7D%7BL_%7Bavg%7D%7DL_%7Binput%7D%28x%2Cy%29)  
+3. Compress high luminances  
+   ![L_{output}(x,y)=\frac{L_{scaled}(x,y)}{1+L_{scaled}(x,y)}](https://latex.codecogs.com/png.latex?L_%7Boutput%7D%28x%2Cy%29%3D%5Cfrac%7BL_%7Bscaled%7D%28x%2Cy%29%7D%7B1&plus;L_%7Bscaled%7D%28x%2Cy%29%7D)  
+
+Local version steps:  
+1. Compute log average  
+2. Map average value to middle-gray given by ![\alpha](https://latex.codecogs.com/png.latex?\alpha)  
+3. Compress luminances by spatially varying function  
+   ![L_{output}(x,y)=\frac{L_{scaled}(x,y)}{1+V(x,y,s(x,y))}](https://latex.codecogs.com/png.latex?L_%7Boutput%7D%28x%2Cy%29%3D%5Cfrac%7BL_%7Bscaled%7D%28x%2Cy%29%7D%7B1&plus;V%28x%2Cy%2Cs%28x%2Cy%29%29%7D)  
+

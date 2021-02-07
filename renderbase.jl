@@ -2,7 +2,7 @@
 
 module JuRenderBase
 export Camera, Object, Light, World
-export loadObjs, saveImage
+export loadObjs, saveImage, loadImage
 export mat_identity, mat_rotate, mat_scale, mat_translate
 export mat_view, mat_perspective, ray_params!
 
@@ -217,6 +217,21 @@ function saveImage(filename::String, pixels::Array{T}, width::Integer, height::I
     @assert length(pixels) >= 3*width*height
     pixels = pixels[1:3*width*height]
     Images.save(filename, Images.colorview(Images.RGB, reshape(pixels, (3, height, width))))
+end
+
+"""
+Load image to RGB array
+"""
+function loadImage(filename::String)
+    if !isfile(filename)
+        throw(ArgumentError("$filename is not found!"))
+    end
+    raw = Images.load(filename)
+    raw = Images.RGB.(raw)
+    width = Images.width(raw)
+    height = Images.height(raw)
+    converted = reshape(Float64.(copy(Images.channelview(raw))), :)
+    return (converted, width, height)
 end
 
 """

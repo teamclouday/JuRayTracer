@@ -1,8 +1,10 @@
 include("./renderbase.jl")
 include("./raytracer.jl")
+include("./tonemapper.jl")
 
 import .JuRenderBase
 import .JuRayTracer
+import .JuToneMapper
 
 function renderCube1()
     camera = JuRenderBase.Camera([10.0, 10.0, 10.0], [9.0, 9.0, 9.0], [0.0, 1.0, 0.0], 400, 400, deg2rad(60))
@@ -119,9 +121,19 @@ function renderCube6()
     JuRenderBase.saveImage("gallary/cube6.png", pixels, camera.w, camera.h)
 end
 
+function tonemap1()
+    pixels, width, height = JuRenderBase.loadImage("gallary/memorial.jpg")
+    mapped = JuToneMapper.map_reinhard_global(pixels, width, height, 3.0)
+    JuRenderBase.saveImage("gallary/mapped1_1.png", mapped, width, height)
+    mapped = JuToneMapper.map_reinhard_global(pixels, width, height, 1/3.0)
+    JuRenderBase.saveImage("gallary/mapped1_2.png", mapped, width, height)
+end
+
 #renderCube1()
 #renderCube2()
 #renderCube3()
 #renderCube4()
 #renderCube5()
-renderCube6()
+#renderCube6()
+
+tonemap1()

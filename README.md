@@ -27,3 +27,19 @@ Cube and Plane (multiple light sources)
 
 Cube and 2 Planes (single light source)  
 ![cube6](gallary/cube6.png)  
+
+
+-----
+
+### Tone Mapping Operators (off topic)  
+
+Original Image:  
+![original](gallary/memorial.jpg)
+
+__Reinhard__ (global version), alpha = 3.0:  
+![mapped1_1](gallary/mapped1_1.png)  
+
+__Reinhard__ (global version), alpha = 1/3.0:  
+![mapped1_1](gallary/mapped1_2.png)  
+
+

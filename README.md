@@ -34,12 +34,12 @@ Cube and 2 Planes (single light source)
 ### Tone Mapping Operators (off topic)  
 
 Original Image:  
-![original](gallary/memorial.jpg)
+<img src="gallary/memorial.jpg" width="200" alt="original">
 
 __Reinhard__ (global version), alpha = 3.0:  
-![mapped1_1](gallary/mapped1_1.png)  
+<img src="gallary/mapped1_1.png" width="200" alt="mapped1_1">
 
 __Reinhard__ (global version), alpha = 1/3.0:  
-![mapped1_1](gallary/mapped1_2.png)  
+<img src="gallary/mapped1_2.png" width="200" alt="mapped1_2">
 
 
